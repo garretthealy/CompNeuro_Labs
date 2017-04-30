@@ -123,20 +123,50 @@ plot(Avec,ipc);
 
 %% 2: Classification
 
-clear all; 
+% Metric space analysis involves first characterizing the dissimilarity of 
+% pairs of spike trains using spike distance, Dspike[q] (Victor and Purpura,
+% 1996). Then, for each spike train T, we determine which stimulus category 
+% evoked spike trains whose average distance from T was smallest, where 
+% stimulus categories are defined on the basis of frequency content. We 
+% then measured the proportion of times the stimulus category into which a 
+% given spike train was categorized corresponded to the stimulus category 
+% that actually evoked it.
+
 close all;
 
 spikes = load('spikes.mat');
 
+pvec = zeros(1,51);
+t = zeros(1,51);
+for q = 0:50:2500
+    pcorrect = 0;
+    for i = 1:4
+        neur = spikes.spikes{i};
+        for j = 1:4
+            band = neur{j}; %bandwidths
+            for k = 1:5
+                amp = band{k};
+                [bool,loc,diff]= isCor(i,j,k,q);
+                pcorrect = pcorrect + bool;
+            end
+        end
+    end
 
+    pcorrect = (pcorrect/(i*j*k))*100;
+    pvec((q/10)+1) = pcorrect;
+    if q~=0
+        t((q/10)+1) = (1/q)*1000; % resolution in ms
+    else 
+        t((q/10)+1) = 1000;
+    end
+    disp(string(q) + ' ' + string(pcorrect) + '%')
+end
 
-
-
-
-
-
-
-
+figure
+hold on
+semilogx(t,pvec,'-o')
+title('Classification Accuracy by Resolution');
+xlabel('Resolution (ms)');ylabel('Accuracy (%)');
 
 
 
